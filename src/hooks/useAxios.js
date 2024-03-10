@@ -63,7 +63,7 @@ const useAxios = () => {
       api.interceptors.request.eject(requestIntercept);
       api.interceptors.response.eject(responseIntercept);
     };
-  }, [auth.authToken]);
+  }, [auth?.token.authToken]);
 
   return { api };
 };
