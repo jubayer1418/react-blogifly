@@ -1,28 +1,43 @@
-import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 import { Link, useParams } from "react-router-dom";
 import comment from "../../public/assets/icons/comment.svg";
 import heart from "../../public/assets/icons/heart-filled.svg";
 import heartN from "../../public/assets/icons/heart.svg";
 import like from "../../public/assets/icons/like.svg";
+import { useAuth } from "../hooks/useAuth";
 import useAxios from "../hooks/useAxios";
 const SingleBlog = () => {
+  const queryClient = useQueryClient();
+
+  const { auth } = useAuth();
   const { api } = useAxios();
   const { blogId } = useParams();
-  console.log(blogId);
+
   const { data: blog } = useQuery({
     queryKey: ["blog", blogId],
     queryFn: async () => {
-      const response = await axios.get(`http://localhost:3000/blogs/${blogId}`);
+      const response = await api.get(`/blogs/${blogId}`);
       return response.data;
     },
   });
 
-  console.log(blog?.isFavourite);
-  console.log(blog);
-  const handleFavourite = (id) => {
-    console.log(id);
-    api.patch(`/blogs/${id}/favourite`);
+  const mutation = useMutation({
+    mutationKey: "blog",
+
+    mutationFn: (id) => {
+      return api.patch(`/blogs/${id}/favourite`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["blog"] });
+    },
+  });
+
+  const handleFavourite = async (id) => {
+    auth?.user ? mutation.mutate(id) : toast.error("you are not allowed to");
+
+    // const response = await api.patch(`/blogs/${id}/favourite`);
+    // setFavourite(response.data.isFavourite);
   };
   return (
     <>

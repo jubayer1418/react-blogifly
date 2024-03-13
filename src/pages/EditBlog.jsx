@@ -1,9 +1,31 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import useAxios from "../hooks/useAxios";
-const CreateBlog = () => {
+const EditBlog = () => {
+  const queryClient = useQueryClient();
+  const { id: blogId } = useParams();
   const navigate = useNavigate();
   const { api } = useAxios();
+  const { data: blog } = useQuery({
+    queryKey: ["blog", blogId],
+    queryFn: async () => {
+      const response = await api.get(`/blogs/${blogId}`);
+      return response.data;
+    },
+  });
+  const mutation = useMutation({
+    mutationKey: "blog",
+
+    mutationFn: (data) => {
+      console.log(blogId);
+      return api.patch(`/blogs/${blogId}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["blog"] });
+    },
+  });
+  console.log(blog);
   const {
     register,
     handleSubmit,
@@ -12,19 +34,17 @@ const CreateBlog = () => {
   } = useForm();
   console.log(errors);
   const onSubmit = async (data) => {
-    console.log(data?.file[0]);
+    console.log(data);
     try {
       const formData = new FormData();
 
-      formData.append("thumbnail", data.file[0]);
-      formData.append("title", data.title);
-      formData.append("content", data.content);
-      formData.append("tags", data.tags);
+      formData.append("thumbnail", data.file[0] || blog.thumbnail);
+      formData.append("title", data.title || blog.title);
+      formData.append("content", data.content || blog.content);
+      formData.append("tags", data.tags || blog.tags);
 
-      const response = await api.post(`/blogs`, formData);
-      console.log(response);
-      navigate(`/blog/${response?.data.blog.id}`);
-      console.log(response);
+      await mutation.mutate(formData);
+      navigate(`/blog/${blogId}`);
     } catch (error) {
       console.log(error);
     }
@@ -52,12 +72,15 @@ const CreateBlog = () => {
                 </svg>
                 <p>Upload Your Image</p>
                 <input
-                  id="file"
-                  type="file"
-                  {...register("file", {
-                    required: "First Name is Required",
-                  })}
+                  value={blogId}
+                  hidden
+                  id="blogId"
+                  {...register("blogId")}
+                  type="test"
+                  accept="image/*"
+                  className="w-6 h-6"
                 />
+                <input id="file" type="file" {...register("file")} />
                 {!!errors && (
                   <div role="alert" className="text-red-600">
                     {errors?.file?.message}
@@ -70,9 +93,8 @@ const CreateBlog = () => {
                 type="text"
                 id="title"
                 name="title"
-                {...register("title", {
-                  required: "Title Name is Required",
-                })}
+                defaultValue={blog?.title}
+                {...register("title")}
                 placeholder="Enter your blog title"
               />
               {!!errors && (
@@ -87,9 +109,8 @@ const CreateBlog = () => {
                 type="text"
                 id="tags"
                 name="tags"
-                {...register("tags", {
-                  required: "Tags Name is Required",
-                })}
+                defaultValue={blog?.tags}
+                {...register("tags")}
                 placeholder="Your Comma Separated Tags Ex. JavaScript, React, Node, Express,"
               />
               {!!errors && (
@@ -103,9 +124,8 @@ const CreateBlog = () => {
               <textarea
                 id="content"
                 name="content"
-                {...register("content", {
-                  required: "Content Name is Required",
-                })}
+                defaultValue={blog?.content}
+                {...register("content")}
                 placeholder="Write your blog content"
                 rows="8"
               ></textarea>
@@ -120,7 +140,7 @@ const CreateBlog = () => {
               type="submit"
               className="bg-indigo-600 text-white px-6 py-2 md:py-3 rounded-md hover:bg-indigo-700 transition-all duration-200"
             >
-              Create Blog
+              Update Blog
             </button>
           </form>
         </div>
@@ -129,4 +149,4 @@ const CreateBlog = () => {
   );
 };
 
-export default CreateBlog;
+export default EditBlog;

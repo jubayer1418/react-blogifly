@@ -1,3 +1,4 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import Swal from "sweetalert2/dist/sweetalert2.js";
@@ -5,6 +6,17 @@ import "sweetalert2/src/sweetalert2.scss";
 import { useAuth } from "../../hooks/useAuth";
 import useAxios from "../../hooks/useAxios";
 const Blog = ({ blog, innerRef }) => {
+  const queryClient = useQueryClient();
+  const mutation = useMutation({
+    mutationKey: "blog",
+
+    mutationFn: (id) => {
+      return api.delete(`/blogs/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["blogs"] });
+    },
+  });
   const { auth } = useAuth();
   const { api } = useAxios();
   const myblog = auth?.user?.id === blog?.author?.id;
@@ -54,7 +66,7 @@ const Blog = ({ blog, innerRef }) => {
       confirmButtonText: "Yes, delete it!",
     }).then((result) => {
       if (result.isConfirmed) {
-        api.delete(`/blogs/${id}`);
+        mutation.mutate(id);
 
         Swal.fire({
           title: "Deleted!",
@@ -113,10 +125,13 @@ const Blog = ({ blog, innerRef }) => {
 
             {show && (
               <div className="action-modal-container">
-                <button className="action-menu-item hover:text-lwsGreen">
+                <Link
+                  to={`/editBlog/${id}`}
+                  className="action-menu-item hover:text-lwsGreen"
+                >
                   <img src="./assets/icons/edit.svg" alt="Edit" />
                   Edit
-                </button>
+                </Link>
                 <button
                   onClick={(e) => handleDelete(id, e)}
                   className="action-menu-item hover:text-red-500"

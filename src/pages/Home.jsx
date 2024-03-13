@@ -1,11 +1,8 @@
 import Blogs from "../components/home/Blogs";
 import FavouriteBlogs from "../components/home/FavouriteBlogs";
 import PopularBlogs from "../components/home/PopularBlogs";
-import { useAuth } from "../hooks/useAuth";
 
 const Home = () => {
-  const { auth } = useAuth();
-
   return (
     <main>
       <section>
@@ -15,8 +12,8 @@ const Home = () => {
 
             <div className="md:col-span-2 h-full w-full space-y-5">
               <PopularBlogs />
-
-              {auth?.user?.favourites.length > 0 && <FavouriteBlogs />}
+              <FavouriteBlogs />
+              {/* {auth?.user?.favourites.length > 0 && } */}
             </div>
           </div>
         </div>

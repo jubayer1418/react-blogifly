@@ -1,6 +1,8 @@
 import { createBrowserRouter } from "react-router-dom";
 import App from "../App";
 import CreateBlog from "../pages/CreateBlog";
+
+import EditBlog from "../pages/EditBlog";
 import Home from "../pages/Home";
 import Login from "../pages/Login";
 import Profile from "../pages/Profile";
@@ -39,6 +41,14 @@ export const router = createBrowserRouter([
         element: (
           <PrivateRoutes>
             <CreateBlog></CreateBlog>
+          </PrivateRoutes>
+        ),
+      },
+      {
+        path: "/editBlog/:id",
+        element: (
+          <PrivateRoutes>
+            <EditBlog></EditBlog>
           </PrivateRoutes>
         ),
       },
