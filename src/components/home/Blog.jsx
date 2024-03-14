@@ -94,7 +94,15 @@ const Blog = ({ blog, innerRef }) => {
         <div className="flex justify-between items-center">
           <div className="flex items-center capitalize space-x-2">
             <div className="avater-img bg-indigo-600 text-white">
-              <span className="">{author.firstName.slice(0, 1)}</span>
+              {author?.avatar ? (
+                <img
+                  className="rounded-full"
+                  src={`http://localhost:3000/uploads/avatar/${author?.avatar}`}
+                  alt=""
+                />
+              ) : (
+                <span className="">{author?.firstName.slice(0, 1)}</span>
+              )}
             </div>
 
             <div>

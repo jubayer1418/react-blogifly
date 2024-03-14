@@ -1,14 +1,17 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import toast from "react-hot-toast";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import Swal from "sweetalert2/dist/sweetalert2.js";
+import "sweetalert2/src/sweetalert2.scss";
 import commentPic from "../../public/assets/icons/comment.svg";
 import heart from "../../public/assets/icons/heart-filled.svg";
 import heartN from "../../public/assets/icons/heart.svg";
 import like from "../../public/assets/icons/like.svg";
 import { useAuth } from "../hooks/useAuth";
 import useAxios from "../hooks/useAxios";
+
 const SingleBlog = () => {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [comment, setComment] = useState("");
   const { auth } = useAuth();
@@ -66,7 +69,21 @@ const SingleBlog = () => {
   });
 
   const handleFavourite = async (id) => {
-    auth?.user ? mutation.mutate(id) : toast.error("you are not allowed to");
+    auth?.user
+      ? mutation.mutate(id)
+      : Swal.fire({
+          title: "You are not a Login User!",
+          text: "Login before you can favorites!",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#3085d6",
+          cancelButtonColor: "#d33",
+          confirmButtonText: "Please login!",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            navigate("/login");
+          }
+        });
 
     // const response = await api.patch(`/blogs/${id}/favourite`);
     // setFavourite(response.data.isFavourite);
@@ -74,7 +91,19 @@ const SingleBlog = () => {
   const handleLike = async (id) => {
     auth?.user
       ? mutationLike.mutate(id)
-      : toast.error("you are not allowed to");
+      : Swal.fire({
+          title: "You are not a Login User!",
+          text: "Login before you can favorites!",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#3085d6",
+          cancelButtonColor: "#d33",
+          confirmButtonText: "Please login!",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            navigate("/login");
+          }
+        });
 
     // const response = await api.patch(`/blogs/${id}/favourite`);
     // setFavourite(response.data.isFavourite);
@@ -82,7 +111,19 @@ const SingleBlog = () => {
   const handleComment = async (id) => {
     auth?.user
       ? await mutationComment.mutate(id)
-      : toast.error("you are not allowed to");
+      : Swal.fire({
+          title: "You are not a Login User!",
+          text: "Login before you can favorites!",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#3085d6",
+          cancelButtonColor: "#d33",
+          confirmButtonText: "Please login!",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            navigate("/login");
+          }
+        });
     await setComment("");
     // const response = await api.patch(`/blogs/${id}/favourite`);
     // setFavourite(response.data.isFavourite);
@@ -90,7 +131,19 @@ const SingleBlog = () => {
   const handleCommentDelete = async (id) => {
     auth?.user
       ? mutationCommentDelete.mutate(id)
-      : toast.error("you are not allowed to");
+      : Swal.fire({
+          title: "You are not a Login User!",
+          text: "Login before you can favorites!",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#3085d6",
+          cancelButtonColor: "#d33",
+          confirmButtonText: "Please login!",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            navigate("/login");
+          }
+        });
 
     // const response = await api.patch(`/blogs/${id}/favourite`);
     // setFavourite(response.data.isFavourite);
