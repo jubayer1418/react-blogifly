@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import toast from "react-hot-toast";
 import { Link, useParams } from "react-router-dom";
-import comment from "../../public/assets/icons/comment.svg";
+import commentPic from "../../public/assets/icons/comment.svg";
 import heart from "../../public/assets/icons/heart-filled.svg";
 import heartN from "../../public/assets/icons/heart.svg";
 import like from "../../public/assets/icons/like.svg";
@@ -9,8 +10,9 @@ import { useAuth } from "../hooks/useAuth";
 import useAxios from "../hooks/useAxios";
 const SingleBlog = () => {
   const queryClient = useQueryClient();
-
+  const [comment, setComment] = useState("");
   const { auth } = useAuth();
+
   const { api } = useAxios();
   const { blogId } = useParams();
 
@@ -22,6 +24,16 @@ const SingleBlog = () => {
     },
   });
 
+  const mutationComment = useMutation({
+    mutationKey: "blog",
+
+    mutationFn: (id) => {
+      return api.post(`/blogs/${id}/comment`, { content: comment });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["blog"] });
+    },
+  });
   const mutation = useMutation({
     mutationKey: "blog",
 
@@ -32,9 +44,53 @@ const SingleBlog = () => {
       queryClient.invalidateQueries({ queryKey: ["blog"] });
     },
   });
+  const mutationLike = useMutation({
+    mutationKey: "blog",
+
+    mutationFn: (id) => {
+      return api.post(`/blogs/${id}/like`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["blog"] });
+    },
+  });
+  const mutationCommentDelete = useMutation({
+    mutationKey: "blog",
+
+    mutationFn: (id) => {
+      return api.delete(`/blogs/${blog.id}/comment/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["blog"] });
+    },
+  });
 
   const handleFavourite = async (id) => {
     auth?.user ? mutation.mutate(id) : toast.error("you are not allowed to");
+
+    // const response = await api.patch(`/blogs/${id}/favourite`);
+    // setFavourite(response.data.isFavourite);
+  };
+  const handleLike = async (id) => {
+    auth?.user
+      ? mutationLike.mutate(id)
+      : toast.error("you are not allowed to");
+
+    // const response = await api.patch(`/blogs/${id}/favourite`);
+    // setFavourite(response.data.isFavourite);
+  };
+  const handleComment = async (id) => {
+    auth?.user
+      ? await mutationComment.mutate(id)
+      : toast.error("you are not allowed to");
+    await setComment("");
+    // const response = await api.patch(`/blogs/${id}/favourite`);
+    // setFavourite(response.data.isFavourite);
+  };
+  const handleCommentDelete = async (id) => {
+    auth?.user
+      ? mutationCommentDelete.mutate(id)
+      : toast.error("you are not allowed to");
 
     // const response = await api.patch(`/blogs/${id}/favourite`);
     // setFavourite(response.data.isFavourite);
@@ -93,11 +149,16 @@ const SingleBlog = () => {
               </div>
               <div className="w-full">
                 <textarea
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
                   className="w-full bg-[#030317] border border-slate-500 text-slate-300 p-4 rounded-md focus:outline-none"
                   placeholder="Write a comment"
                 ></textarea>
                 <div className="flex justify-end mt-4">
-                  <button className="bg-indigo-600 text-white px-6 py-2 md:py-3 rounded-md hover:bg-indigo-700 transition-all duration-200">
+                  <button
+                    onClick={() => handleComment(blog.id)}
+                    className="bg-indigo-600 text-white px-6 py-2 md:py-3 rounded-md hover:bg-indigo-700 transition-all duration-200"
+                  >
                     Comment
                   </button>
                 </div>
@@ -108,11 +169,23 @@ const SingleBlog = () => {
                 <div className="avater-img bg-orange-600 text-white">
                   <span className="">S</span>
                 </div>
-                <div className="w-full">
-                  <h5 className="text-slate -500 font-bold">
-                    {comment.author.firstName} {comment.author.lastName}
-                  </h5>
-                  <p className="text-slate-300">{comment.content}</p>
+                <div className="flex justify-end gap-4">
+                  <div className="">
+                    <h5 className="text-slate -500 font-bold">
+                      {comment.author.firstName} {comment.author.lastName}
+                    </h5>
+                    <p className="text-slate-300">{comment.content}</p>
+                  </div>
+                  <div>
+                    {comment.author.id === auth?.user?.id && (
+                      <button
+                        onClick={() => handleCommentDelete(comment.id)}
+                        className="bg-red-600 text-white px-6 py-2 md:py-3 rounded-md hover:bg-red-700 transition-all duration-200"
+                      >
+                        Delete
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
@@ -122,7 +195,7 @@ const SingleBlog = () => {
 
       <div className="floating-action">
         <ul className="floating-action-menus">
-          <li>
+          <li onClick={() => handleLike(blog.id)}>
             <img src={like} alt="like" />
             <span>{blog?.likes?.length}</span>
           </li>
@@ -132,7 +205,7 @@ const SingleBlog = () => {
           </li>
           <a href="#comments">
             <li>
-              <img src={comment} alt="Comments" />
+              <img src={commentPic} alt="Comments" />
               <span>{blog?.comments?.length}</span>
             </li>
           </a>
